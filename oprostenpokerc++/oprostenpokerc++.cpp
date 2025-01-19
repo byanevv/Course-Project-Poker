@@ -299,7 +299,8 @@ bool checktheraisesize(int raisedchips,int numplayers,int igrachi[9][8]) {
     bool checker = true;
 
     for (int i = 0; i < numplayers;i++) {
-        if (raisedchips > igrachi[i][0]&& igrachi[i][5] == 1) {
+
+        if (raisedchips  - igrachi[i][6]> igrachi[i][0]&& igrachi[i][5] == 1) {
             checker = false;
         }
 
@@ -313,6 +314,62 @@ void swapcards(int deck[32],int i,int randomindex) {
     int temp = deck[i];
     deck[i] = deck[randomindex];
     deck[randomindex] = temp;
+
+}
+
+void showthedeck(int deck[32]) {
+
+    //Показване на разбърканото тесте
+    std::cout << "Shuffled deck:\n";
+    for (int i = 0; i < 32; i++) {
+        int card = deck[i];
+        int value = card / 10; // Стойността на картата
+        int suit = card % 10;  // Цветът на картата
+        std::cout << value << " of ";
+
+        switch (suit) {
+        case 0: std::cout << "spades"; break;
+        case 1: std::cout << "diamonds"; break;
+        case 2: std::cout << "hearts"; break;
+        case 3: std::cout << "clubs"; break;
+        }
+        std::cout << std::endl;
+    }
+
+}
+
+void shufflethedeck(int deck[32]) {
+
+    srand(time(0));
+
+    for (int i = 0; i < 32; i++) {
+        int randomNum = rand() % 32;
+        swapcards(deck, i, randomNum);
+    }
+}
+
+void printoutallstats(int spisuksigrachi[9][8],int numplayers,int pot) {
+
+    for (int i = 0; i < numplayers; i++)
+    {
+        std::cout << "Player" << i + 1 << ": " << spisuksigrachi[i][0] << " ";
+    }
+    std::cout << std::endl << std::endl;
+    std::cout << "Pot: " << pot << std::endl << std::endl;
+
+}
+
+int createthepot(int igrachi[9][8],int numplayers) {
+
+    int sum = 0;
+    for (int i = 0; i < numplayers; i++)
+    {
+        if (igrachi[i][0] >= 10) {
+            igrachi[i][0] -= 10;
+            sum += 10;
+        }
+    }
+    return sum;
 
 }
 
@@ -338,6 +395,20 @@ int checkwhoisthewinner(int igrachi[9][8],int numplayers) {
 
 }
 
+int checkhowmanyplayersarewithchips(int numplayers,int igrachi[9][8]) {
+
+    int sum = 0;
+
+    for (int i = 0; i < numplayers; i++)
+    {
+        if (igrachi[i][0] >= 10) {
+            sum++;
+        }
+    }
+    return sum;
+
+}
+
 void checkthewinner(int numplayers, int potmoney, int igrachi[9][8],int deckwithcards[32]) {
 
     int pointcombs[9];
@@ -349,7 +420,7 @@ void checkthewinner(int numplayers, int potmoney, int igrachi[9][8],int deckwith
             playerwithcards++;
         }
     }
-    int maxcombination = pointcombs[0];//Намираме най голямата комбинация
+    int maxcombination = 0;//Намираме най голямата комбинация
     for (int i = 0; i < playerwithcards; i++)
     {
         if (pointcombs[i] > maxcombination) {
@@ -369,6 +440,7 @@ void checkthewinner(int numplayers, int potmoney, int igrachi[9][8],int deckwith
         if (igrachi[i][5] == 1 && igrachi[i][4] == maxcombination) {
             listwithmaxcomb[numberofplayerswithmaxhand] = i;
             numberofplayerswithmaxhand++;
+            igrachi[i][5] = 0;
         }
     }
 
@@ -413,12 +485,12 @@ void checkthewinner(int numplayers, int potmoney, int igrachi[9][8],int deckwith
 
                         }
                         else {
-                            std::cout << "Sorry player " << i + 1 << " you don't have the money to continue ! ";
+                            std::cout << "Sorry Player " << i + 1 << " you don't have the money to continue ! " << std::endl;
                             answer = 'n';
+                            igrachi[i][5] = 0;
                         }
 
                     } while (answer != 'y' && answer != 'n');
-
                 }
 
             }
@@ -447,11 +519,7 @@ void checkthewinner(int numplayers, int potmoney, int igrachi[9][8],int deckwith
             //Вече имам всички играчи които ще участват в новото раздване
 
            // Разбъркване на тестето
-            srand(time(0));
-            for (int i = 0; i < 32; i++) {
-                int randomNum = rand() % 32;
-                swapcards(deckwithcards, i, randomNum);
-            }
+            shufflethedeck(deckwithcards);
 
             int cardcounter = 0;
             for (int i = 0; i < numplayers; i++) {//Раздаване на чипове
@@ -468,23 +536,13 @@ void checkthewinner(int numplayers, int potmoney, int igrachi[9][8],int deckwith
                 igrachi[i][4] = handstrenght;//сила на комбинацията
             }
 
-
             int lastraise = 0;
 
             for (int j = 0; j < numplayers; j++) {//Първото раздаване от играта
                 if (igrachi[j][5] == 1) {
-
-                    for (int i = 0; i < numplayers; i++)
-                    {
-                        std::cout << "Player" << i + 1 << ": " << igrachi[i][0] << " ";
-                    }
-                    std::cout << std::endl << std::endl;
-
-                    std::cout << "Pot: " << potmoney << std::endl << std::endl;
-
+                    printoutallstats(igrachi, numplayers, potmoney);
 
                     //частта на всеки играч
-                
 
                     std::cout << "You have given: " << igrachi[j][6] << std::endl;
                         
@@ -497,55 +555,22 @@ void checkthewinner(int numplayers, int potmoney, int igrachi[9][8],int deckwith
                     std::cout << igrachi[j][4] << std::endl;
                     char action = 's';
                     if (lastraise == 0) {
-                            do{
-                                std::cout << "Player" << j + 1 << " raise,call or fold ?(r/f): ";
-                                std::cin >> action;
-                            } while (action != 'r' && action != 'f');
-                            switch (action)
-                            {
-                            case 'f':
-                                igrachi[j][5] = 0;
-                                break;
-                            case 'r':
-                                std::cout << std::endl;
-                                int raisedchips;
-                                bool correctraise = true;
-                                do {
-                                    std::cout << "How many chips do you want to raise ? ";
-
-                                    std::cin >> raisedchips;
-                                    if ((raisedchips >= lastraise + 10) && checktheraisesize(raisedchips, numplayers, igrachi) && raisedchips % 10 == 0) {
-
-                                        correctraise = false;
-
-                                    }
-                                } while (correctraise);
-
-                                lastraise = raisedchips;
-                                igrachi[j][0] -= lastraise;
-                                igrachi[j][6] += lastraise;
-                                potmoney += lastraise;
-                                for (int k = 0; k < numplayers; k++) //Правя всички стойности за рейзване на 0                      
-                                {
-                                    igrachi[k][7] = 0;
-                                }
-                                igrachi[j][7] = 1;
-
-                                break;
-                            }
-
+                        do {
+                            std::cout << "Player" << j + 1 << " raise,call or fold ?(r/f): ";
+                            std::cin >> action;
+                        } while (action != 'r' && action != 'f');
+                     
                     }
-                    else{
-                            do{
-                                std::cout << "Player" << j + 1 << " raise,call or fold ?(r/c/f): ";
-                                std::cin >> action;
-                            } while (action != 'r' && action != 'c' && action != 'f');
-                        switch (action)
-                        {
-
+                    else {
+                        do {
+                            std::cout << "Player" << j + 1 << " raise,call or fold ?(r/c/f): ";
+                            std::cin >> action;
+                        } while (action != 'r' && action != 'c' && action != 'f');
+                    }
+                    switch (action) {
                         case 'f':
                             igrachi[j][5] = 0;
-                            break;
+                        break;
 
                         case 'c':
                             if (lastraise != 0) {
@@ -553,7 +578,8 @@ void checkthewinner(int numplayers, int potmoney, int igrachi[9][8],int deckwith
                                 igrachi[j][6] += lastraise;
                                 potmoney += lastraise;
                             }
-                            break;
+                        break;
+
                         case 'r':
                             std::cout << std::endl;
                             int raisedchips;
@@ -578,19 +604,17 @@ void checkthewinner(int numplayers, int potmoney, int igrachi[9][8],int deckwith
                                 igrachi[k][7] = 0;
                             }
                             igrachi[j][7] = 1;
-                            break;
-                        }
+                        break;
                     }
+                    
                 }
                 std::cout << std::endl;
-
             }
 
             bool someoneelsehasraised = false;
 
             for (int i = 0; i < numplayers; i++)//Останалите завъртвания
             {
-
                 if (igrachi[i][5] == 1) {//Проверяваме дали участва
 
                     if (igrachi[i][7] == 1) {//Това проверява дали този играч на който сме е последния рейзнал,ако е спираме цикъла
@@ -599,19 +623,10 @@ void checkthewinner(int numplayers, int potmoney, int igrachi[9][8],int deckwith
                     }
                     else {
 
-                        for (int i = 0; i < numplayers; i++)
-                        {
-                            std::cout << "Player" << i + 1 << ": " << igrachi[i][0] << " ";
-                        }
-                        std::cout << std::endl << std::endl;
-
-                        std::cout << "Pot: " << potmoney << std::endl << std::endl;
-
+                        printoutallstats(igrachi, numplayers, potmoney);
 
                         //частта на всеки играч
-
                         std::cout << "You have given: " << igrachi[i][6] << std::endl;
-
                         std::cout << "Last raise is: " << lastraise << std::endl << std::endl;
 
                         int card1 = igrachi[i][1];
@@ -625,12 +640,11 @@ void checkthewinner(int numplayers, int potmoney, int igrachi[9][8],int deckwith
                             std::cin >> action;
                         } while (action != 'r' && action != 'c' && action != 'f');
 
-                        switch (action)
-                        {
+                        switch (action) {
 
                         case 'f':
                             igrachi[i][5] = 0;
-                            break;
+                        break;
 
                         case 'c':
                             if (lastraise != 0) {
@@ -639,7 +653,8 @@ void checkthewinner(int numplayers, int potmoney, int igrachi[9][8],int deckwith
                                 igrachi[i][6] += (lastraise - igrachi[i][6]);
 
                             }
-                            break;
+                        break;
+
                         case 'r':
                             std::cout << std::endl;
                             int raisedchips;
@@ -667,17 +682,12 @@ void checkthewinner(int numplayers, int potmoney, int igrachi[9][8],int deckwith
                             }
                             igrachi[i][7] = 1;//И увеличавам този който е рейзнал към момента
                             someoneelsehasraised = true;
-                            break;
+                        break;
                         }
-
                     }
-
                     std::cout << std::endl;
-
                 }
-
                 if (someoneelsehasraised && i == numplayers - 1) {
-
                     someoneelsehasraised = false;
                     i = -1;
                 }
@@ -691,7 +701,7 @@ void checkthewinner(int numplayers, int potmoney, int igrachi[9][8],int deckwith
                     playerwithcards++;
                 }
             }
-            int maxcombination = pointcombs[0];//Намираме най голямата комбинация
+            int maxcombination = 0;//Намираме най голямата комбинация
             for (int i = 0; i < playerwithcards; i++)
             {
                 if (pointcombs[i] > maxcombination) {
@@ -720,7 +730,6 @@ void checkthewinner(int numplayers, int potmoney, int igrachi[9][8],int deckwith
             }
 
             if (numberofplayerswithmaxhand == 1) {
-
                 int indexofwinningplayer = listwithmaxcomb[0];
                 igrachi[indexofwinningplayer][0] += potmoney;
                 std::cout << "The round has ended , congrats to Player" << indexofwinningplayer + 1 << std::endl<<std::endl;
@@ -729,18 +738,43 @@ void checkthewinner(int numplayers, int potmoney, int igrachi[9][8],int deckwith
 
         } while (!thereisonlyoneplayerleft);
 
-
     }
 
+}
 
+void checkifthereisanyoneleftwith0(int numplayers,int spisuksigrachi[9][8],int potmoney,int deckofcards[32]) {
 
+    bool checkifthereisanyoneiwith0 = false;
+    for (int i = 0; i < numplayers; i++)
+    {
+        if (spisuksigrachi[i][5] == 1 && spisuksigrachi[i][0] == 0) {
+            checkifthereisanyoneiwith0 = true;
+        }
+    }
+    if (checkifthereisanyoneiwith0) {
 
+        printoutallstats(spisuksigrachi, numplayers, potmoney);
+
+        for (int i = 0; i < numplayers; i++)
+        {
+            if (spisuksigrachi[i][5] == 1) {
+                int card1 = spisuksigrachi[i][1];
+                int card2 = spisuksigrachi[i][2];
+                int card3 = spisuksigrachi[i][3];
+                std::cout << "Player" << i + 1 << " cards are : ";
+                printcards(card1, card2, card3);
+                std::cout << spisuksigrachi[i][4] << std::endl << std::endl;
+            }
+        }
+        std::cout << "Sorry guys the betting is over because there is a player with 0 chips.";
+        checkthewinner(numplayers, potmoney, spisuksigrachi, deckofcards);
+    }
 
 }
 
 void playaroundofpoker(int numberofplayers,int spisuksigrachi[9][8]) {
 
-    int deckwithcards[32];//Картите са 32 на брой
+    int deckwithcards[32];
     int countercards = 0;
     for (int suit = 0; suit < 4; ++suit) { // 4 цвята
         for (int value = 7; value <= 14; ++value) { // Стойности от 7 до 14
@@ -750,29 +784,8 @@ void playaroundofpoker(int numberofplayers,int spisuksigrachi[9][8]) {
     }
 
     // Разбъркване на тестето
-    srand(time(0));
-    for (int i = 0; i < 32; i++) {
-        
-        int randomNum = rand() % 32;
-        swapcards(deckwithcards, i, randomNum);
-    }
-    
-     ////Показване на разбърканото тесте
-     //   std::cout << "Shuffled deck:\n";
-     //   for (int i = 0; i < 32;i++) {
-     //       int card = deckwithcards[i];
-     //          int value = card / 10; // Стойността на картата
-     //          int suit = card % 10;  // Цветът на картата
-     //          std::cout << value << " of ";
-     //          
-     //       switch (suit) {
-     //          case 0: std::cout << "spades"; break;
-     //          case 1: std::cout << "diamonds"; break;
-     //          case 2: std::cout << "hearts"; break;
-     //          case 3: std::cout << "clubs"; break;
-     //      }
-     //       std::cout << std::endl;
-     //  }
+    shufflethedeck(deckwithcards);
+    //showthedeck(deckwithcards);
 
     int cardcounter = 0;
     for (int i = 0; i < numberofplayers; i++) {
@@ -799,69 +812,21 @@ void playaroundofpoker(int numberofplayers,int spisuksigrachi[9][8]) {
 
     int lastraise = 0;
     int potmoney = 0;
+    potmoney = createthepot(spisuksigrachi,numberofplayers);
 
-    for (int i = 0; i < numberofplayers; i++)
-    {
-        if (spisuksigrachi[i][0] >= 10) {
-            spisuksigrachi[i][0] -= 10;
-            potmoney += 10;
-        }
-    }
     //Проверка ако има играч останал с 0 чипа
-    bool checkifthereisanyoneiwith0 = false;
-    for (int i = 0; i < numberofplayers; i++)
-    {
-        if (spisuksigrachi[i][5] == 1 && spisuksigrachi[i][0] == 0) {
-            checkifthereisanyoneiwith0 = true;
-        }
-    }
-    if (checkifthereisanyoneiwith0) {
-
-        for (int i = 0; i < numberofplayers; i++)
-        {
-            std::cout << "Player" << i + 1 << ": " << spisuksigrachi[i][0] << " ";
-        }
-        std::cout << std::endl << std::endl;
-        std::cout << "Pot: " << potmoney << std::endl << std::endl;
-
-        for (int i = 0; i < numberofplayers; i++)
-        {
-            if (spisuksigrachi[i][5] == 1) {
-                int card1 = spisuksigrachi[i][1];
-                int card2 = spisuksigrachi[i][2];
-                int card3 = spisuksigrachi[i][3];
-                std::cout << "Player" << i + 1 << " cards are : ";
-                printcards(card1, card2, card3);
-                std::cout << spisuksigrachi[i][4] << std::endl << std::endl;
-            }
-        }
-
-        std::cout << "Sorry guys the betting is over because there is a player with 0 chips.";
-        checkthewinner(numberofplayers, potmoney, spisuksigrachi, deckwithcards);
-        
-    }
+    checkifthereisanyoneleftwith0(numberofplayers,spisuksigrachi,potmoney,deckwithcards);
 
     for (int j = 0; j < numberofplayers; j++) {//Първото раздаване от играта
 
-        for (int i = 0; i < numberofplayers; i++)
-        {
-            std::cout << "Player" << i + 1 << ": " << spisuksigrachi[i][0] << " ";
-        }
-        std::cout << std::endl << std::endl;
-
-        std::cout << "Pot: " << potmoney << std::endl << std::endl;
-
         //частта на всеки играч
         if (spisuksigrachi[j][5] == 1) {
-            std::cout << "You have given: " << spisuksigrachi[j][6] << std::endl;
-            if (j == 0) {
-                std::cout << "Last raise is: " << 0 << std::endl << std::endl;
-                lastraise = 0;
-            }
-            else {
-                std::cout << "Last raise is: " << spisuksigrachi[j - 1][6] << std::endl << std::endl;
 
-            }
+            printoutallstats(spisuksigrachi, numberofplayers, potmoney);
+
+            std::cout << "You have given: " << spisuksigrachi[j][6] << std::endl; 
+            std::cout << "Last raise is: " << lastraise << std::endl << std::endl;
+
             int card1 = spisuksigrachi[j][1];
             int card2 = spisuksigrachi[j][2];
             int card3 = spisuksigrachi[j][3];
@@ -869,95 +834,58 @@ void playaroundofpoker(int numberofplayers,int spisuksigrachi[9][8]) {
             std::cout << spisuksigrachi[j][4] << std::endl;
             char action = 's';
             if (lastraise == 0) {
-
-                do{
-                    std::cout << "Player" << j + 1 << " raise,call or fold ?(r/f): ";
+                do {
+                    std::cout << "Player" << j + 1 << " raise or fold ?(r/f): ";
                     std::cin >> action;
                 } while (action != 'r' && action != 'f');
-
-                switch (action)
-                {
-                case 'f':
-                    spisuksigrachi[j][5] = 0;
-                    break;
-                case 'r':
-                    std::cout << std::endl;
-                    int raisedchips;
-                    bool correctraise = true;
-                    do {
-                        std::cout << "How many chips do you want to raise ? ";
-
-                        std::cin >> raisedchips;
-                        if ((raisedchips >= lastraise + 10) && checktheraisesize(raisedchips, numberofplayers, spisuksigrachi) && raisedchips % 10 == 0) {
-
-                            correctraise = false;
-
-                        }
-                    } while (correctraise);
-
-                    lastraise = raisedchips;
-                    spisuksigrachi[j][0] -= lastraise;
-                    spisuksigrachi[j][6] += lastraise;
-                    potmoney += lastraise;
-                    for (int k = 0; k < numberofplayers; k++) //Правя всички стойности за рейзване на 0                      
-                    {
-                        spisuksigrachi[k][7] = 0;
-                    }
-                    spisuksigrachi[j][7] = 1;
-
-                    break;
-                }
-
             }
-            else{
-
-                do{
+            else {
+                do {
                     std::cout << "Player" << j + 1 << " raise,call or fold ?(r/c/f): ";
                     std::cin >> action;
                 } while (action != 'r' && action != 'c' && action != 'f');
-
+            }
                 switch (action)
                 {
-
-                case 'f':
-                    spisuksigrachi[j][5] = 0;
+                    case 'f':
+                        spisuksigrachi[j][5] = 0;
                     break;
 
-                case 'c':
-                    if (lastraise != 0) {
+                    case 'c':
+                        if (lastraise != 0) {
+                            spisuksigrachi[j][0] -= lastraise;
+                            spisuksigrachi[j][6] += lastraise;
+                            potmoney += lastraise;
+                        }
+                    break;
+                    case 'r':
+                        std::cout << std::endl;
+                        int raisedchips;
+                        bool correctraise = true;
+                        do {
+                            std::cout << "How many chips do you want to raise ? ";
+
+                            std::cin >> raisedchips;
+                            if ((raisedchips >= lastraise + 10) && checktheraisesize(raisedchips, numberofplayers, spisuksigrachi) && raisedchips % 10 == 0) {
+
+                                correctraise = false;
+
+                            }
+                        } while (correctraise);
+
+                        lastraise = raisedchips;
                         spisuksigrachi[j][0] -= lastraise;
                         spisuksigrachi[j][6] += lastraise;
                         potmoney += lastraise;
-                    }
-                    break;
-                case 'r':
-                    std::cout << std::endl;
-                    int raisedchips;
-                    bool correctraise = true;
-                    do {
-                        std::cout << "How many chips do you want to raise ? ";
-
-                        std::cin >> raisedchips;
-                        if ((raisedchips >= lastraise + 10) && checktheraisesize(raisedchips, numberofplayers, spisuksigrachi) && raisedchips % 10 == 0) {
-
-                            correctraise = false;
-
+                        for (int k = 0; k < numberofplayers; k++) //Правя всички стойности за рейзване на 0                      
+                        {
+                            spisuksigrachi[k][7] = 0;
                         }
-                    } while (correctraise);
-
-                    lastraise = raisedchips;
-                    spisuksigrachi[j][0] -= lastraise;
-                    spisuksigrachi[j][6] += lastraise;
-                    potmoney += lastraise;
-                    for (int k = 0; k < numberofplayers; k++) //Правя всички стойности за рейзване на 0                      
-                    {
-                        spisuksigrachi[k][7] = 0;
-                    }
-                    spisuksigrachi[j][7] = 1;
+                        spisuksigrachi[j][7] = 1;
 
                     break;
                 }
-            }
+            
             std::cout << std::endl;
         }
     }
@@ -966,23 +894,13 @@ void playaroundofpoker(int numberofplayers,int spisuksigrachi[9][8]) {
 
     for (int i = 0; i < numberofplayers; i++)//Останалите завъртвания
     {
-
         if (spisuksigrachi[i][5] == 1) {//Проверяваме дали участва
-
             if (spisuksigrachi[i][7] == 1) {//Това проверява дали този играч на който сме е последния рейзнал,ако е спираме цикъла
                 std::cout << "The betting is closed !" << std::endl << std::endl;
                 break;
             }
             else {
-
-                for (int i = 0; i < numberofplayers; i++)
-                {
-                    std::cout << "Player" << i + 1 << ": " << spisuksigrachi[i][0] << " ";
-                }
-                std::cout << std::endl << std::endl;
-
-                std::cout << "Pot: " << potmoney << std::endl << std::endl;
-
+                printoutallstats(spisuksigrachi, numberofplayers, potmoney);
 
                 //частта на всеки играч
 
@@ -997,28 +915,24 @@ void playaroundofpoker(int numberofplayers,int spisuksigrachi[9][8]) {
                 std::cout << spisuksigrachi[i][4] << std::endl;
                 char action = 's';
                 
-                do{
-
+                do {
                     std::cout << "Player" << i + 1 << " raise,call or fold ?(r/c/f): ";
                     std::cin >> action;
-
                 } while (action != 'r'&& action != 'c'&& action != 'f');
 
-                switch (action)
-                {
-
+                switch (action) {
                 case 'f':
                     spisuksigrachi[i][5] = 0;
-                    break;
+                break;
 
                 case 'c':
                     if (lastraise != 0) {
                         spisuksigrachi[i][0] -= (lastraise - spisuksigrachi[i][6]);
                         potmoney += (lastraise - spisuksigrachi[i][6]);
                         spisuksigrachi[i][6] += (lastraise - spisuksigrachi[i][6]);
-
                     }
-                    break;
+                break;
+
                 case 'r':
                     std::cout << std::endl;
                     int raisedchips;
@@ -1039,7 +953,6 @@ void playaroundofpoker(int numberofplayers,int spisuksigrachi[9][8]) {
                     potmoney += (lastraise - spisuksigrachi[i][6]);
                     spisuksigrachi[i][6] += (lastraise - spisuksigrachi[i][6]);
 
-
                     for (int k = 0; k < numberofplayers; k++) //Правя всички стойности за рейзване на 0                      
                     {
                         spisuksigrachi[k][7] = 0;
@@ -1050,22 +963,15 @@ void playaroundofpoker(int numberofplayers,int spisuksigrachi[9][8]) {
                 }
 
             }
-
             std::cout << std::endl;
-
         }
-
         if (someoneelsehasraised && i == numberofplayers - 1) {
-
             someoneelsehasraised = false;
             i = -1;
         }
-
-
     }
 
     checkthewinner(numberofplayers, potmoney, spisuksigrachi, deckwithcards);
-
 }
 
 void endofthegame(int numplayers,int spisuksigrachi[9][8]) {
@@ -1103,15 +1009,13 @@ void startanewgame(int numberofplayers) {
             std::cout << "Congrats to the winning Player"<< winnerindex+1 <<" !";
             break;
         }
-            std::cout << "Do you want to play another round ? (y/n) : ";
-            std::cin >> action;
-            if (action == 'y') {
-                playaroundofpoker(numberofplayers, spisuksigrachi);
-
-            }
-            else if (action == 'n') {
-                
-            }
+        std::cout << "Do you want to play another round ? (y/n) : ";
+        std::cin >> action;
+        if (action == 'y') {
+            playaroundofpoker(numberofplayers, spisuksigrachi);
+        }
+        else if (action == 'n') {        
+        }
 
     } while (action != 'n');
 
@@ -1143,29 +1047,46 @@ void continuethegame(std::ifstream& file) {
             spisuksigrachi[playerCount-1][0] = chipcount;
         }
     }
+    int howmanyplayersarethere = 0;
+    howmanyplayersarethere = checkhowmanyplayersarewithchips(playerCount, spisuksigrachi);
+    if (howmanyplayersarethere > 1) {
+        playaroundofpoker(playerCount, spisuksigrachi);
 
-    playaroundofpoker(playerCount, spisuksigrachi);
+        char action = 's';
+        do {
+            int winnerindex = checkwhoisthewinner(spisuksigrachi, playerCount);
+            if (winnerindex >= 0 && winnerindex <= 8) {
+                std::cout << "Congrats to the winning player" << winnerindex + 1 << " !";
+                break;
+            }
+            std::cout << "Do you want to play another round ? (y/n) : ";
+            std::cin >> action;
+            if (action == 'y') {
+                playaroundofpoker(playerCount, spisuksigrachi);
 
-    char action = 's';
-    do {
-        int winnerindex = checkwhoisthewinner(spisuksigrachi, playerCount);
-        if (winnerindex >= 0 && winnerindex <= 8) {
-            std::cout << "Congrats to the winning player" << winnerindex + 1 << " !";
-            break;
-        }
-        std::cout << "Do you want to play another round ? (y/n) : ";
-        std::cin >> action;
-        if (action == 'y') {
-            playaroundofpoker(playerCount, spisuksigrachi);
+            }
+            else if (action == 'n') {
 
-        }
-        else if (action == 'n') {
+            }
 
-        }
+        } while (action != 'n');
 
-    } while (action != 'n');
+        endofthegame(playerCount, spisuksigrachi);
+    }
+    else {
+        std::cout << "You can not continue that game because it is over already !" << std::endl;
+        std::cout << "Starting a new game ." << std::endl;
+        int countplayers;
+        do {
+            std::cout << "How many players are going to play (2-9)? ";
+            std::cin >> countplayers;
 
-    endofthegame(playerCount,spisuksigrachi);
+            if (countplayers < 2 || countplayers > 9) {
+                std::cout << "Invalid number of players. Please enter a number between 2 and 9.\n";
+            }
+        } while (countplayers < 2 || countplayers > 9);
+        startanewgame(countplayers);
+    }
 }
 
 int main() {
@@ -1188,14 +1109,12 @@ int main() {
                 std::cout <<"A new game is gonna start !"<< std::endl << std::endl;
                 int countplayers;
                 do {
-                    
-                        std::cout << "How many players are going to play (2-9)? ";
-                        std::cin >> countplayers;
-                    
-                        if (countplayers < 2 || countplayers > 9) {
-                            std::cout << "Invalid number of players. Please enter a number between 2 and 9.\n";
-                        }
-                    
+                    std::cout << "How many players are going to play (2-9)? ";
+                    std::cin >> countplayers;
+              
+                    if (countplayers < 2 || countplayers > 9) {
+                        std::cout << "Invalid number of players. Please enter a number between 2 and 9.\n";
+                    }    
                 } while (countplayers < 2 || countplayers > 9);
                 startanewgame(countplayers);
 
@@ -1204,12 +1123,9 @@ int main() {
 
             continuethegame(file);
 
-
             file.close();
-
         }
         else if(action == 'n'){
-        
             int countplayers;
             do {
                 std::cout << "How many players are going to play (2-9)? ";
@@ -1223,6 +1139,5 @@ int main() {
         
         }
     } while (action != 'y' && action != 'n');
-
 
 }

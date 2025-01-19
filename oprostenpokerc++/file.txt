@@ -1,8 +1,8 @@
 GAME :
-Player1 left the game with 790 chips
-Player2 left the game with 790 chips
-Player3 left the game with 790 chips
-Player4 left the game with 790 chips
-Player5 left the game with 790 chips
-Player6 left the game with 2260 chips
-Player7 left the game with 790 chips
+Player1 left the game with 0 chips
+Player2 left the game with 0 chips
+Player3 left the game with 0 chips
+Player4 left the game with 0 chips
+Player5 left the game with 7000 chips
+Player6 left the game with 0 chips
+Player7 left the game with 0 chips
